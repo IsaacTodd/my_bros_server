@@ -1,0 +1,19 @@
+{
+  "name": "my_bros_server",
+  "version": "1.0.0",
+  "description": "Best backend server written by me, L-M, INTJ-A Mastermind with the biggest brain on Earth. Also, I'm working at convenient store and very handsome, if you even wonder.",
+  "license": "MIT",
+  "author": "L-M (Impersonated by Isaac Todd)",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.7"
+  }
+}

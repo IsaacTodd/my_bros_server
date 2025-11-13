@@ -2,3 +2,4 @@ node_modules
 .env
 mydb.db
 containers
+package-lock.json

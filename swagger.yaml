@@ -1,0 +1,460 @@
+openapi: 3.0.3
+info:
+  title: My Bros Server API
+  description: |
+    Backend API for user authentication and admin note management.
+
+    This API provides endpoints for:
+    - User registration and authentication
+    - Protected user resources
+    - Admin note creation and management
+  version: 1.0.0
+  contact:
+    name: API Support
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: User registration and login operations
+  - name: User
+    description: Protected user endpoints
+  - name: Admin
+    description: Admin-only operations for note management
+
+paths:
+  /register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: |
+        Creates a new user account with the provided credentials.
+
+        **Username requirements:**
+        - 1-20 characters
+        - Only letters (A-Z, a-z), numbers (0-9), and underscore (_)
+
+        **Password requirements:**
+        - 8-20 characters
+        - At least one uppercase letter
+        - At least one lowercase letter
+        - At least one number
+        - At least one special character (@$!%*?&_)
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  pattern: '^[A-Za-z0-9_]{1,20}$'
+                  example: john_doe
+                  description: Username following the specified format
+                password:
+                  type: string
+                  format: password
+                  pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{8,20}$'
+                  example: SecurePass123!
+                  description: Password meeting complexity requirements
+      responses:
+        '200':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: success
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_fields:
+                  value:
+                    error: need username and password.
+                invalid_username:
+                  value:
+                    error: username must be less than 20 characters, and limited to numbers, English characters, and underscore.
+                invalid_password:
+                  value:
+                    error: Password must be 8–20 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&_).
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: something went wrong
+
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user
+      description: Authenticates a user with username and password, returns a JWT token for subsequent requests
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: john_doe
+                  description: The user's username
+                password:
+                  type: string
+                  format: password
+                  example: SecurePass123!
+                  description: The user's password
+      responses:
+        '200':
+          description: Login successful, JWT token returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    description: JWT token to be used in Authorization header
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: failed to login as user john_doe
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /:
+    get:
+      tags:
+        - User
+      summary: Access protected user endpoint
+      description: Returns a welcome message for authenticated users
+      operationId: getUserHome
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Hello Welcome! :D
+        '400':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: invalidtoken
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/welcome:
+    get:
+      tags:
+        - Admin
+      summary: Admin welcome endpoint
+      description: Returns a welcome message for authenticated admin users
+      operationId: getAdminWelcome
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: welcome Admin!
+        '400':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: invalidtoken
+        '401':
+          description: Unauthorized - user is not an admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: unauthorized
+
+  /admin/notes:
+    get:
+      tags:
+        - Admin
+      summary: List all notes
+      description: Retrieves a list of all note filenames for the authenticated admin user
+      operationId: listNotes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of note filenames
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["1699876543", "1699876789", "1699877012"]
+                description: Array of note IDs (Unix timestamps)
+        '400':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/notes/create:
+    post:
+      tags:
+        - Admin
+      summary: Create a new note
+      description: Creates a new note with the provided content. The note is assigned a unique ID based on the current Unix timestamp
+      operationId: createNote
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: This is my note content
+                  description: The content of the note (optional, defaults to empty string)
+      responses:
+        '200':
+          description: Note created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filename:
+                    type: string
+                    example: "1699876543"
+                    description: The note ID (Unix timestamp)
+        '400':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/note:
+    get:
+      tags:
+        - Admin
+      summary: Get note content
+      description: Retrieves the content of a specific note by its filename
+      operationId: getNote
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filename
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "1699876543"
+          description: The note ID (filename) to retrieve
+      responses:
+        '200':
+          description: Note content
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: This is my note content
+        '400':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error (e.g., note not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/note/{note_id}:
+    delete:
+      tags:
+        - Admin
+      summary: Delete a note
+      description: Deletes a specific note by its ID
+      operationId: deleteNote
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "1699876543"
+          description: The note ID to delete
+      responses:
+        '200':
+          description: Note deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: success
+        '400':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error (e.g., note not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /login endpoint
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+      required:
+        - error
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: User ID
+          example: 1
+        username:
+          type: string
+          description: Username
+          example: john_doe
+        role:
+          type: string
+          description: User role
+          example: user
+          enum:
+            - user
+            - admin
+      required:
+        - id
+        - username
+        - role
+
+    Note:
+      type: object
+      properties:
+        filename:
+          type: string
+          description: Note ID (Unix timestamp)
+          example: "1699876543"
+        content:
+          type: string
+          description: Note content
+          example: This is my note content

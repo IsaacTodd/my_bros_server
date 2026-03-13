@@ -71,4 +71,22 @@ router.get('/',is_user,(req,res)=>{
 });
 
 
+router.get('/profile/:USER_ID', async (req,res)=>{
+  const USER_ID = req.params['USER_ID'];
+  const get_user_by_id = (id)=> new Promise((resolve,reject)=>{
+         database.all('SELECT * FROM user WHERE id=$id', {
+            $id: USER_ID,
+        },(err, rows)=>{
+            if(err) {
+              console.error(err);
+              return reject("Failed read profile");
+            }
+            return resolve(rows);
+        });
+  });
+  const user = await get_user_by_id(USER_ID);
+  return res.json(user);
+
+});
+
 module.exports = router;

@@ -89,4 +89,35 @@ router.get('/profile/:USER_ID', async (req, res) => {
 
 });
 
+router.patch('/update_password', is_user, async (req, res) => {
+  const { old_password, new_password, username } = req.body;
+  const hashed_old_password = generateMd5Hash(old_password);
+  const hashed_new_password = generateMd5Hash(new_password);
+
+  const update_password = () => new Promise((resolve, reject) => {
+    database.run('UPDATE user set password=$new_password WHERE username=$username AND password=$old_password',
+      {
+        $username: username,
+        $old_password: hashed_old_password,
+        $new_password: hashed_new_password
+      },
+      (err) => {
+        console.error(err);
+        if (err) return reject();
+        return resolve(true);
+      }
+    );
+  });
+  try {
+    await update_password();
+    return res.json({ msg: "success" });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ msg: "something went wrong" });
+  }
+});
+
+
+
 module.exports = router;

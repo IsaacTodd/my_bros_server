@@ -232,22 +232,16 @@ paths:
               type: object
               required:
                 - username
-                - old_password
-                - new_password
+                - password
               properties:
                 username:
                   type: string
                   example: john_doe
-                  description: The user's username
-                old_password:
+                  description: Your username
+                password:
                   type: string
                   format: password
-                  example: SecurePass123!
-                  description: An old user's password
-                new_password:
-                  type: string
-                  format: password
-                  example: New_SecurePass123!
+                  example: NewSecurePass123!
                   description: A new user's password
       security:
         - bearerAuth: []

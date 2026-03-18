@@ -90,15 +90,13 @@ router.get('/profile/:USER_ID', async (req, res) => {
 });
 
 router.patch('/update_password', is_user, async (req, res) => {
-  const { old_password, new_password, username } = req.body;
-  const hashed_old_password = generateMd5Hash(old_password);
-  const hashed_new_password = generateMd5Hash(new_password);
+  const { password, username } = req.body;
+  const hashed_new_password = generateMd5Hash(password);
 
   const update_password = () => new Promise((resolve, reject) => {
-    database.run('UPDATE user set password=$new_password WHERE username=$username AND password=$old_password',
+    database.run('UPDATE user set password=$new_password WHERE username=$username',
       {
         $username: username,
-        $old_password: hashed_old_password,
         $new_password: hashed_new_password
       },
       (err) => {

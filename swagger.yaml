@@ -12,7 +12,7 @@ info:
   contact:
     name: API Support
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:5000
     description: Development server
 
 tags:
@@ -187,7 +187,95 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /profile/{user_id}:
+    get:
+      tags:
+        - User
+      summary: Get user profile.
+      description: Gets a specific user profile by its ID
+      operationId: getUserProfile
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: The User Id to get
+      responses:
+        '200':
+          description: successfully get user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
 
+  /update_password:
+    patch:
+      tags:
+        - Authentication
+      summary: Update password for current user.
+      description: Return successful message if password update found no errors.
+      operationId: updateUserPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - old_password
+                - new_password
+              properties:
+                username:
+                  type: string
+                  example: john_doe
+                  description: The user's username
+                old_password:
+                  type: string
+                  format: password
+                  example: SecurePass123!
+                  description: An old user's password
+                new_password:
+                  type: string
+                  format: password
+                  example: New_SecurePass123!
+                  description: A new user's password
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: 'success'
+        '400':
+          description: Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: invalidtoken
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /admin/welcome:
     get:
       tags:

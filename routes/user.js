@@ -85,7 +85,8 @@ router.get('/profile/:USER_ID', async (req, res) => {
     });
   });
   const user = await get_user_by_id(USER_ID);
-  return res.json(user);
+  if(user[0]) return res.json(user[0]);
+  return res.status(404).json({"error":"Not Found"});
 
 });
 

@@ -231,13 +231,13 @@ paths:
             schema:
               type: object
               required:
-                - username
+                - uid
                 - password
               properties:
-                username:
-                  type: string
-                  example: john_doe
-                  description: Your username
+                uid:
+                  type: integer
+                  example: 1
+                  description: Your user Id
                 password:
                   type: string
                   format: password

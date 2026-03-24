@@ -7,6 +7,19 @@ const fs = require('fs/promises');
 const exec = util.promisify(require('node:child_process').exec);
 const path = require('path');
 
+
+
+router.get('/get_system_data', async (req,res)=>{
+  try {
+    const out = await exec('uname -a');
+    const sys_data = out.stdout || "data missing"; 
+    return res.json({"message":sys_data});
+  }
+  catch(err){
+    return res.json({"error":"something went wrong."});
+  }
+})
+
 router.use('/', is_admin);
 router.get('/welcome', (req, res) => {
   return res.json({ "message": "welcome Admin!" });

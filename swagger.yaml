@@ -231,10 +231,10 @@ paths:
             schema:
               type: object
               required:
-                - uid
+                - user_id
                 - password
               properties:
-                uid:
+                user_id:
                   type: integer
                   example: 1
                   description: Your user Id
